@@ -19,7 +19,6 @@ let knownIds = new Set();
 let isInit = false;
 let isProcessing = false;
 let lastProcessedUrl = '';
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); //Init variables
 //________________
 //Injects mandatory root stylesheet to override existing response height styles and ensures persistent red overlay. Function
 function injectRootStyles() {
@@ -55,18 +54,17 @@ lastProcessedUrl = fullUrl;
 const controller = new AbortController();
 const timeoutId = setTimeout(() => controller.abort(), 10000); //10 seconds timeout
 try {
-playBeep(); // Play beep on sending data to server
+await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay before sending to server
 const response = await fetch('http://localhost:8080/api/topic', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), signal: controller.signal });
 clearTimeout(timeoutId);
 if (response.ok) {
 const result = await response.json();
-playBeep();
 if (result.status === "ok" && result.processed) {
 insertIntoActiveTextarea(result.processed);
 }
 }
 } catch (error) {
-playBeep();
+// Error handling
 } finally {
 setTimeout(() => { isProcessing = false; }, 5000);
 }
@@ -98,20 +96,6 @@ sendBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true,
 }
 }
 //________________
-//Plays a short beep sound using Web Audio API. Function
-function playBeep() {
-if (audioCtx.state === 'suspended') { audioCtx.resume(); } //Resume audio context
-const osc = audioCtx.createOscillator();
-const gain = audioCtx.createGain(); //Create audio nodes
-osc.connect(gain);
-gain.connect(audioCtx.destination); //Connect nodes
-osc.type = 'sine';
-osc.frequency.value = 800;
-gain.gain.setValueAtTime(0.2, audioCtx.currentTime); //Set tone
-osc.start();
-osc.stop(audioCtx.currentTime + 0.3); //Play sound
-}
-//________________
 //Extracts prompt and answer text from DOM nodes after page switch. Function
 function getChatPair() {
 const userNodes = document.querySelectorAll('user-query');
@@ -130,10 +114,10 @@ const titleNode = parent ? parent.querySelector('.title-text') : null;
 return titleNode ? titleNode.innerText.trim() : 'Новая тема'; //Find text node
 }
 //________________
-//Checks if the first word of the question contains a hyphen without spaces. Function
-function validateFirstWord(text) {
-const firstWord = text.trim().split(/\s+/)[0];
-return firstWord && firstWord.includes('-');
+//Checks if the first character of the question starts with a slash. Function
+function validateFirstChar(text) {
+const trimmed = text.trim();
+return trimmed.startsWith('/');
 }
 //________________
 //Checks for newly added links in the DOM tree. Function
@@ -155,7 +139,7 @@ const titleText = getItemTitle(a);
 a.click();
 setTimeout(() => {
 const pair = getChatPair();
-if (!validateFirstWord(pair.q)) { isProcessing = false; return; } //Skip if first word lacks hyphen
+if (!validateFirstChar(pair.q)) { isProcessing = false; return; } //Skip if question does not start with slash
 sendToGo({ title: titleText, url: fullUrl, question: pair.q, answer: pair.a }, titleText, fullUrl, pair);
 }, 2000);
 break;

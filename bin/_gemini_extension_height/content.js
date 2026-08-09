@@ -10,7 +10,8 @@ model-response::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.6) !import
 model-response::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.8) !important; }
 model-response h3 { color: #50dd00 !important; }
 model-response code[data-path-to-node] { color: #f70 !important; }
-.query-text-line { font-size: 18px !important;  color:#fff; line-height:1.3em;}
+.query-text-line { font-size: 18px !important;  color:#fff; line-height:1.3em; }
+.user-query-bubble-with-background, .user-query-content { background:#000 !important; border-bottom:2px #f70 solid !important;}
 .user-query-bubble-with-background { padding:10px !important; border-radius:5px !important; background:#111 !important}
 .query-content  {padding:0px !important;}
 .user-query-container, .user-query-content {width:100% !important;}
