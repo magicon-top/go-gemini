@@ -1,14 +1,51 @@
+//________________
+//Checks if the current tab is the first active instance. Function
+function checkFirst() {
+const sId = sessionStorage.getItem('id'); // Get session id
+if (!sId) {
+const fId = localStorage.getItem('first'); // Get first id
+if (!fId) {
+const nId = Date.now().toString(); // Make new id
+localStorage.setItem('first', nId); // Set first
+sessionStorage.setItem('id', nId); // Set session
+return true; } // Is first
+return false; } // Not first
+const cF = localStorage.getItem('first'); // Get current
+return sId === cF; } // Check match
+if (!checkFirst()) {
+console.log('Gemini Observer: skipped on extra tab');
+} else {
 let knownIds = new Set();
 let isInit = false;
 let isProcessing = false;
 let lastProcessedUrl = '';
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); //Init variables
 //________________
-//Injects mandatory root stylesheet to override existing response height styles. Function
+//Injects mandatory root stylesheet to override existing response height styles and ensures persistent red overlay. Function
 function injectRootStyles() {
 const style = document.createElement('style');
 style.textContent = 'model-response { max-height: 800px !important; overflow-y: auto !important; display: block !important; }';
 document.head.appendChild(style); //Inject style rule into head
+createRedBox();
+setInterval(createRedBox, 2000); //Re-verify box presence
+}
+//________________
+//Creates or restores the red overlay box on screen. Function
+function createRedBox() {
+let redBox = document.getElementById('gemini-red-overlay');
+if (!redBox) {
+redBox = document.createElement('div');
+redBox.id = 'gemini-red-overlay';
+redBox.style.position = 'fixed';
+redBox.style.top = '0';
+redBox.style.left = '0';
+redBox.style.width = '20px';
+redBox.style.height = '20px';
+redBox.style.backgroundColor = 'red';
+redBox.style.zIndex = '999999';
+redBox.style.pointerEvents = 'none';
+document.body.appendChild(redBox); //Inject red overlay box
+}
 }
 //________________
 //Sends data to Go server and inserts response into active textarea. Function
@@ -18,6 +55,7 @@ lastProcessedUrl = fullUrl;
 const controller = new AbortController();
 const timeoutId = setTimeout(() => controller.abort(), 10000); //10 seconds timeout
 try {
+playBeep(); // Play beep on sending data to server
 const response = await fetch('http://localhost:8080/api/topic', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), signal: controller.signal });
 clearTimeout(timeoutId);
 if (response.ok) {
@@ -133,3 +171,4 @@ const observer = new MutationObserver(() => { checkNewLinks(); }); //Init observ
 observer.observe(document.body, { childList: true, subtree: true }); //Watch DOM changes
 }
 setTimeout(initObserver, 6000); //Start event listener after 6 seconds delay
+}
