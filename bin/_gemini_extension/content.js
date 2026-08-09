@@ -24,7 +24,7 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); //Ini
 //Injects mandatory root stylesheet to override existing response height styles and ensures persistent red overlay. Function
 function injectRootStyles() {
 const style = document.createElement('style');
-style.textContent = 'model-response { max-height: 800px !important; overflow-y: auto !important; display: block !important; }';
+style.textContent = 'model-response { max-height: 400px !important; overflow-y: auto !important; display: block !important; }';
 document.head.appendChild(style); //Inject style rule into head
 createRedBox();
 setInterval(createRedBox, 2000); //Re-verify box presence
